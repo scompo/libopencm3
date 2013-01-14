@@ -1,7 +1,7 @@
 /*
  * This file is part of the libopencm3 project.
  *
- * Copyright (C) 2012 Mauro Scomparin <scompo@gmail.com>
+ * Copyright (C) 2012 - 2013 Mauro Scomparin <scompo@gmail.com>
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -252,30 +252,6 @@
 * Convenience enums.
 * -----------------------------------------------------------------------------
 */
-typedef enum{
-	SSI_FRAME_FORMAT_TI,
-	SSI_FRAME_FORMAT_SPI_0,
-	SSI_FRAME_FORMAT_SPI_1,
-	SSI_FRAME_FORMAT_SPI_2,
-	SSI_FRAME_FORMAT_SPI_3,
-	SSI_FRAME_FORMAT_MICROWIRE,
-}ssi_frm_frmt_t;
-
-typedef enum{
-	SSI_DATABITS_3,
-	SSI_DATABITS_4,
-	SSI_DATABITS_5,
-	SSI_DATABITS_6,
-	SSI_DATABITS_7,
-	SSI_DATABITS_8,
-	SSI_DATABITS_9,
-	SSI_DATABITS_10,
-	SSI_DATABITS_11,
-	SSI_DATABITS_12,
-	SSI_DATABITS_13,
-	SSI_DATABITS_14,
-	SSI_DATABITS_15,
-}ssi_databits;
 
 typedef enum{
 	SSI_CLOCK_SOURCE_SYSTEM,
@@ -288,6 +264,12 @@ typedef enum{
 	SSI_MODE_SLAVE_TX_DISABLED,
 }ssi_mode;
 
+typedef enum{
+	SSI_PROTOCOL_FREESCALE,
+	SSI_PROTOCOL_TI,
+	SSI_PROTOCOL_MICROWIRE,
+}ssi_protocol;
+
 /* 
 * =============================================================================
 * Function forward declarations.
@@ -297,13 +279,14 @@ BEGIN_DECLS
 
 void ssi_enable(u32 ssi);
 void ssi_disable(u32 ssi);
-
 void ssi_set_mode(u32 ssi, ssi_mode mode);
-void ssi_set_frame_format(u32 ssi, ssi_frm_frmt_t format);
-void ssi_set_databits(u32 ssi, ssi_databits bits);
+void ssi_set_frame_format(u32 ssi, 
+			u8 bits, u8 phase, 
+			u8 polarity, ssi_protocol protocol);
 void ssi_set_clock_source(u32 ssi, ssi_clock_source source);
-void ssi_set_clock_rate(u32 ssi, u8 val);
-void ssi_set_clock_prescaler(u32 ssi, u8 val);
+//void ssi_set_clock_rate(u32 ssi, u8 rate);
+//void ssi_set_clock_prescaler(u32 ssi, u8 val);
+void ssi_set_bit_rate(u32 ssi, u8 divider, u8 rate);
 void ssi_set_DMA_enable(u32 ssi, u8 val);
 
 void ssi_send(u32 ssi,u32 data);

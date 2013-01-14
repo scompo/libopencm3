@@ -1,7 +1,7 @@
 /*
  * This file is part of the libopencm3 project.
  *
- * Copyright (C) 2012 Mauro Scomparin <scompo@gmail.com>
+ * Copyright (C) 2012 - 2013 Mauro Scomparin <scompo@gmail.com>
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -61,40 +61,88 @@ void ssi_set_mode(u32 ssi, ssi_mode mode){
 }
 
 /**
- * \brief Set SSI frame format
+ * \brief Set frame format for SSI
  *
  * @param[in] ssi SSI block register address base @ref ssi_reg_base
- * @param[in] format format of frame.
+ * @param[in] bits SSI databits
+ * @param[in] phase SSI phase
+ * @param[in] polarity SSI polarity
+ * @param[in] mode SSI mode
  */
-void ssi_set_frame_format(u32 ssi, ssi_frm_frmt_t format){
-	u32 reg32,tmpFRF;
-	switch(format){
-		case SSI_FRAME_FORMAT_TI:
-			tmpFRF |= SPI_CR0_FRF_1;
+void ssi_set_frame_format(u32 ssi, 
+			u8 bits, u8 phase, 
+			u8 polarity, ssi_protocol protocol){
+	u32 regTemp = 0;
+	switch(protocol){
+		case SSI_PROTOCOL_FREESCALE:
+			// Here I need to set polarity and phase
+			// not otherwise.
+			regTemp |= (SSI_CR0_FRF_MASK & SSI_CR0_FRF_0);
+			if(phase==1)
+				regTemp|= SSI_CR0_SPH;
+			if(polarity==1)
+				regTemp|= SSI_CR0_SPO;
 			break;
-		case SSI_FRAME_FORMAT_MICROWIRE:
-			tmpFRF |= SPI_CR0_FRF_2;
+		case SSI_PROTOCOL_TI:
+			regTemp |= (SSI_CR0_FRF_MASK & SSI_CR0_FRF_1);
 			break;
-		case SSI_FRAME_FORMAT_SPI_0:
-			tmpFRF |= SPI_CR0_FRF_0;
-		case SSI_FRAME_FORMAT_SPI_1:
-			tmpFRF |= SPI_CR0_FRF_0;
-			return;
-		case SSI_FRAME_FORMAT_SPI_2:
-			tmpFRF |= SPI_CR0_FRF_0;
-			return;
-		case SSI_FRAME_FORMAT_SPI_3:
-			tmpFRF |= SPI_CR0_FRF_0;
-			return;
+		case SSI_PROTOCOL_MICROWIRE:
+			regTemp |= (SSI_CR0_FRF_MASK & SSI_CR0_FRF_2);
+			break;
 		default:
-			/* I should not end here! */
+			// I should not end here!
 			return;
 	}
-	reg32 = SSI_CR0(ssi);
-	reg32 &= ~SSI_CR0_FRF_MASK;
-	reg32 |= tmpFRF;
-	SSI_CR0(ssi) = reg32;
-	return;
+	regTemp |= (SSI_CR0_DSS_MASK & (bits-1));
+	u32 reg32 = SSI_CR0(ssi);
+	reg32 |= regTemp;
+	SSI_CR0(ssi)= reg32;
+}
+
+/**
+ * \brief Set clock source for SSI
+ *
+ * @param[in] ssi SSI block register address base @ref ssi_reg_base
+ * @param[in] source SSI clock source
+ */
+void ssi_set_clock_source(u32 ssi, ssi_clock_source source){
+	u32 regTemp=0;
+	switch(source){
+		case SSI_CLOCK_SOURCE_SYSTEM:
+			regTemp |= (SSI_CC_CS_MASK & SSI_CC_CS_0);
+			break;
+		case SSI_CLOCK_SOURCE_PIOSC:
+			regTemp |= (SSI_CC_CS_MASK & SSI_CC_CS_5);
+			break;
+	}
+	u32 reg32 = SSI_CC(ssi);
+	reg32|= regTemp;
+	SSI_CC(ssi) = reg32;
+}
+
+/**
+ * \brief Set clock rate for SSI
+ *
+ * @param[in] ssi SSI block register address base @ref ssi_reg_base
+ * @param[in] rate SSI clock rate
+ */
+void ssi_set_clock_rate(u32 ssi, u8 rate){
+	u32 regTemp=0;
+	
+	u32 reg32 = SSI_CR0(ssi);
+	reg32 |= regTemp;
+	SSI_CR0(ssi)= reg32;
+}
+/**
+ * \brief Set bit rate for SSI
+ *
+ * @param[in] ssi SSI block register address base @ref ssi_reg_base
+ * @param[in] rate SSI clock rate
+ * @param[in] divider SSI clock divider
+ */
+void ssi_set_bit_rate(u32 ssi, u8 divider, u8 rate){
+	u32 tempCR0=0;
+	u32 tempCR0=0;
 }
 
 /* TODO: implement the other stuff */
